@@ -50,3 +50,26 @@ export const getPositions = async (
     // TODO: return statement needs meta data for better frontend handling
     res.status(200).json(globalPositions);
 };
+
+export const removeServer = async (
+  req: Request, 
+  res: Response
+) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || authHeader !== `Bearer ${POSITION_TOKEN}`) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const { serverId } = req.body as { serverId: string };
+  if (!serverId || typeof serverId !== 'string') {
+    return res.status(400).json({ message: "Missing or invalid serverId" });
+  }
+
+  if (globalPositions[serverId]) {
+    delete globalPositions[serverId];
+    console.log(`Server ${serverId} manually removed (shutdown signal)`);
+    return res.status(200).json({ message: `Server ${serverId} removed` });
+  }
+
+  return res.status(200).json({ message: `Server ${serverId} not found (already gone)` });
+};
